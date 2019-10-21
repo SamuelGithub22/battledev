@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+
+group 'com.apologic.battledev'
+version '1.0-SNAPSHOT'
+
+allprojects {
+
+    group 'com.apologic.battledev'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+    }
+
+}
+
+configure(subprojects - project(':ctrl')) {
+    dependencies {
+        testCompile project(':ctrl')
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+

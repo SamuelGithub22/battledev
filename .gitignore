@@ -1,0 +1,8 @@
+.gradle
+.nb-gradle
+.idea
+*.bak
+*.orig
+*~
+
+**/out

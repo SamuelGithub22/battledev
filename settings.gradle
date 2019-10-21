@@ -1,0 +1,10 @@
+rootProject.name = 'battledev'
+
+include 'ctrl'
+
+include 'exercice1'
+include 'exercice2'
+include 'exercice3'
+include 'exercice4'
+include 'exercice5'
+include 'exercice6'
