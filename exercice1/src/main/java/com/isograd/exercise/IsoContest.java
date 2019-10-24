@@ -4,16 +4,25 @@
  * Use: System.err.println to ouput debugging information to STDERR.
  * ***/
 package com.isograd.exercise;
-import java.util.*;
+
+import java.util.Scanner;
 
 public class IsoContest {
-    public static void main( String[] argv ) throws Exception {
-        String  line;
+    public static void main(String[] argv) throws Exception {
         Scanner sc = new Scanner(System.in);
-        while(sc.hasNextLine()) {
-            line = sc.nextLine();
-            /* Lisez les données et effectuez votre traitement */
+        int reservoir = Integer.parseInt(sc.nextLine());
+        int consommation = Integer.parseInt(sc.nextLine());
+
+        int trajet = 0;
+        while (sc.hasNextLine()) {
+            int etape = Integer.parseInt(sc.nextLine());
+            double carburant = (etape - trajet) * consommation / 100.;
+            if (carburant > reservoir) {
+                System.out.println("KO");
+                return;
+            }
+            trajet += etape - trajet;
         }
-        /* Vous pouvez aussi effectuer votre traitement une fois que vous avez lu toutes les données.*/
+        System.out.println("OK");
     }
 }
