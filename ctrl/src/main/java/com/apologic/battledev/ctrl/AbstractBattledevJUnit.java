@@ -1,16 +1,17 @@
 package com.apologic.battledev.ctrl;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -86,7 +88,8 @@ public class AbstractBattledevJUnit {
     private static void save(Pattern pattern, ZipFile zipFile, ZipEntry e, Map<String, String> map) {
         String name = pattern.matcher(e.getName()).replaceFirst("$1");
         try (InputStream inputStream = zipFile.getInputStream(e)) {
-            map.put(name, IOUtils.toString(inputStream));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            map.put(name, bufferedReader.lines().collect(Collectors.joining("\n")));
         } catch (IOException ex) {
             ex.printStackTrace();
         }
