@@ -4,16 +4,30 @@
  * Use: System.err.println to ouput debugging information to STDERR.
  * ***/
 package com.isograd.exercise;
+
 import java.util.*;
 
 public class IsoContest {
-    public static void main( String[] argv ) throws Exception {
-        String  line;
+    public static void main(String[] argv) throws Exception {
+        String line;
         Scanner sc = new Scanner(System.in);
-        while(sc.hasNextLine()) {
-            line = sc.nextLine();
-            /* Lisez les données et effectuez votre traitement */
+        int n = Integer.parseInt(sc.nextLine());
+        int last = sc.nextInt();
+        int cpt = 0;
+        while (sc.hasNextInt()) {
+            int i = sc.nextInt();
+            if (last * 2 < n && i * 2 > n) {
+                cpt++;
+            } else if (last * 2 > n && i * 2 < n) {
+                cpt++;
+            } else if (i == last && i * 2 == n) {
+                System.out.println("INF");
+                return;
+            } else if (i * 2 == n) {
+                cpt++;
+            }
+            last = i;
         }
-        /* Vous pouvez aussi effectuer votre traitement une fois que vous avez lu toutes les données.*/
+        System.out.println(cpt);
     }
 }

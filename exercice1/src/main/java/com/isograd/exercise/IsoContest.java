@@ -8,12 +8,20 @@ import java.util.*;
 
 public class IsoContest {
     public static void main( String[] argv ) throws Exception {
-        String  line;
         Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        int reserve = Integer.parseInt(sc.nextLine());
+        int mise = 0;
+        String acheteur = "KO";
         while(sc.hasNextLine()) {
-            line = sc.nextLine();
-            /* Lisez les données et effectuez votre traitement */
+            String line = sc.nextLine();
+            String[] split = line.split("\\s");
+            int px = Integer.parseInt(split[0]);
+            if (px > reserve && px >= mise) {
+                mise = px;
+                acheteur = split[1];
+            }
         }
-        /* Vous pouvez aussi effectuer votre traitement une fois que vous avez lu toutes les données.*/
+        System.out.println(acheteur.toUpperCase());
     }
 }
