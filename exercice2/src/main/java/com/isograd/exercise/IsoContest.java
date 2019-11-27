@@ -10,10 +10,16 @@ public class IsoContest {
     public static void main( String[] argv ) throws Exception {
         String  line;
         Scanner sc = new Scanner(System.in);
+        List<Integer> lst = new ArrayList<>();
         while(sc.hasNextLine()) {
-            line = sc.nextLine();
+            lst.add(Integer.parseInt(sc.nextLine()));
             /* Lisez les données et effectuez votre traitement */
         }
-        /* Vous pouvez aussi effectuer votre traitement une fois que vous avez lu toutes les données.*/
+        int min = lst.stream().min(Integer::compareTo).get();
+        int cpt = 0;
+        for (Integer integer : lst) {
+            cpt += integer- min;
+        }
+        System.out.println(cpt);
     }
 }
