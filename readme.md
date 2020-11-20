@@ -7,7 +7,7 @@ Pour bien réussir une [battle dev] (https://battledev.blogdumoderateur.com/) en
 Prérequis
 ---------
 
-* JDK 8
+* JDK 11
 * Gradle
 * IntelliJ (ou autre)
 
@@ -29,6 +29,7 @@ Pour chaque exercice de la Battle Dev :
 * Télécharger le zip contenant les exemples et le copier dans le dossier `sample` du projet
 * Coder `IsoContest` 
 * Lancer la classe de test `Exercice1Test` pour vérifier
+    * des configurations Intellij sont enregistrées et prêt à être lancées
 * Copier le code de la classe `IsoContest`
     * tout le code (ctrl+A -> ctrl+C)
 * Coller le code sur le site
