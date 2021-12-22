@@ -3,16 +3,15 @@ plugins {
 }
 
 
-group 'com.apologic.battledev'
-version '1.0-SNAPSHOT'
+group 'fr.archemc2.battledev'
+version '2.0-SNAPSHOT'
 
 allprojects {
 
-    group 'com.apologic.battledev'
+    group 'fr.archemc2.battledev'
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 }
 
@@ -25,18 +24,19 @@ subprojects {
     targetCompatibility = '11'
 
     dependencies {
-        testCompile group: 'junit', name: 'junit', version: '4.12'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
 }
 
 configure(subprojects - project(':ctrl')) {
     dependencies {
-        testCompile project(':ctrl')
+        testImplementation project(':ctrl')
     }
-}
-
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 

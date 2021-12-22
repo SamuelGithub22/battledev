@@ -1,10 +1,15 @@
 package com.apologic.battledev.ctrl;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+import org.apache.commons.lang3.function.Failable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -20,8 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,21 +39,19 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AbstractBattledevJUnit {
-
-    private static Map<String, String> INPUT;
-
-    private static Map<String, String> OUTPUT;
 
     private static Method ISOCONTEST_MAIN;
 
+    private static Path sample;
+
     private static ExecutorService ES;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
-        INPUT = new HashMap<>();
-        OUTPUT = new HashMap<>();
         // on recupere la classe du projet + la methode main
         Class<?> isocontext = Thread.currentThread().getContextClassLoader().loadClass("com.isograd.exercise.IsoContest");
         ISOCONTEST_MAIN = Arrays.stream(isocontext.getDeclaredMethods()).filter(m -> m.getName().equals("main"))
@@ -57,32 +60,46 @@ public class AbstractBattledevJUnit {
                 .findFirst().orElseThrow(() -> new Exception("no main"));
         ES = Executors.newFixedThreadPool(2);
         // on recupere le zip du telechargement
-        Path sample = Paths.get(".").toAbsolutePath().resolve("sample").normalize();
+        sample = Paths.get(".").toAbsolutePath().resolve("sample").normalize();
         try (Stream<Path> files = Files.walk(sample, 1)) {
-            files.filter(sample.getFileSystem().getPathMatcher("glob:**/sample-*.zip")::matches).limit(1).forEach(path -> {
-                System.out.println(path);
-                Pattern input = Pattern.compile(".*/(input.+\\.txt)");
-                Pattern output = Pattern.compile(".*/(output.+\\.txt)");
-                try (ZipFile zipFile = new ZipFile(path.toFile())) {
-                    zipFile.stream().filter(e -> !e.isDirectory())
-                            .filter(e -> input.asPredicate().test(e.getName()))
-                            .forEach(e -> save(input, zipFile, e, INPUT));
-                    zipFile.stream().filter(e -> !e.isDirectory())
-                            .filter(e -> output.asPredicate().test(e.getName()))
-                            .forEach(e -> save(output, zipFile, e, OUTPUT));
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-        }
-        if (INPUT.isEmpty()) {
-            throw new Exception("Aucun fichier zip  dans le dossier " + sample + " !");
+            files.filter(sample.getFileSystem().getPathMatcher("glob:**/sample-*.zip")::matches)
+                    .limit(1)
+                    .forEach(Failable.asConsumer(path -> {
+                        System.out.println(path);
+                        try (ZipFile zipFile = new ZipFile(path.toFile())) {
+                            zipFile.stream()
+                                    .filter(e -> !e.isDirectory())
+                                    .forEach(Failable.asConsumer(e -> save(zipFile, e)));
+                        }
+                        // on dezip et on delete la 1ere fois
+                        Files.delete(path);
+                    }));
         }
     }
 
-    @AfterClass
+    static Stream<Arguments> exemple() throws IOException {
+        Set<String> txts;
+        try (Stream<Path> files = Files.list(sample)) {
+            txts = files.map(Path::getFileName).map(Path::toString).filter(str -> str.endsWith(".txt")).collect(Collectors.toSet());
+        }
+        return txts.stream().filter(str -> str.startsWith("input")).map(str -> str.substring(5, str.indexOf("."))).map(Integer::parseInt)
+                .filter(i -> txts.contains("output" + i + ".txt"))
+                .map(Failable.asFunction(i -> Arguments.of(i,
+                        "input" + i + ".txt",
+                        Files.readString(sample.resolve("input" + i + ".txt")),
+                        "output" + i + ".txt",
+                        Files.readString(sample.resolve("output" + i + ".txt")))));
+    }
+
+    @AfterAll
     public static void afterClass() {
         ES.shutdown();
+    }
+
+    private static void save(ZipFile zipFile, ZipEntry e) throws IOException {
+        try (InputStream is = zipFile.getInputStream(e)) {
+            Files.copy(is, sample.resolve(Path.of(e.getName()).getFileName()));
+        }
     }
 
     private static void save(Pattern pattern, ZipFile zipFile, ZipEntry e, Map<String, String> map) {
@@ -95,25 +112,24 @@ public class AbstractBattledevJUnit {
         }
     }
 
-    protected void exemple(int exo) {
-        exemple("input" + exo + ".txt", "output" + exo + ".txt");
+    @Test
+    @Order(1)
+    public void hasAnyTest() {
+        assertThat(sample).isDirectoryContaining("regex:.*input\\d+\\.txt");
+        assertThat(sample).isDirectoryContaining("regex:.*output\\d+\\.txt");
     }
 
-    protected void exemple(String input, String output) {
-        if (!INPUT.containsKey(input)) {
-            System.out.println("aucun exemple pour " + input);
-            return;
-        }
-        Assert.assertTrue(output, OUTPUT.containsKey(output));
-
+    @ParameterizedTest(name = "exemple{0}")
+    @MethodSource
+    @Order(2)
+    public void exemple(int exemple, String inputFile, String input, String outputFile, String output) {
         OutputStream os = new ByteArrayOutputStream();
         PrintStream out = System.out;
         InputStream in = System.in;
-        String exemple = INPUT.getOrDefault(input, "");
         try {
             // on change les flux de sortie / entree
             System.setOut(new PrintStream(os));
-            System.setIn(new ByteArrayInputStream(exemple.getBytes()));
+            System.setIn(new ByteArrayInputStream(input.getBytes()));
             Future<?> futur = ES.submit(() -> {
                 try {
                     ISOCONTEST_MAIN.invoke(null, new Object[]{new String[0]});
@@ -145,18 +161,17 @@ public class AbstractBattledevJUnit {
             System.setIn(in);
         }
         String isocontest = os.toString().trim();
-        String isofile = OUTPUT.getOrDefault(output, "").trim();
 
+        System.out.println(inputFile);
         System.out.println(input);
-        System.out.println(exemple);
         System.out.println();
         System.out.println("IsoContest.java");
         System.out.println(isocontest);
         System.out.println();
+        System.out.println(outputFile);
         System.out.println(output);
-        System.out.println(isofile);
 
-        Assert.assertEquals(isofile, isocontest);
+        assertThat(output).isEqualTo(isocontest);
     }
 
 }
