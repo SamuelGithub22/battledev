@@ -4,83 +4,50 @@
  * Use: System.err.println to ouput debugging information to STDERR.
  * ***/
 package com.isograd.exercise;
-import java.util.*;
 
-import static java.lang.Integer.parseInt;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Scanner;
 
 public class IsoContest {
     public static void main( String[] argv ) throws Exception {
-        System.err.println("----------------------");
-        String  line;
         Scanner sc = new Scanner(System.in);
-        List<BandeLumineuse> listBl = new ArrayList<>();
+        List<Point> listBl = new ArrayList<>();
 
-        int nbLignes = Integer.parseInt(sc.nextLine());
-        System.err.println(nbLignes);
+        int N = sc.nextInt();
 
-        for (int i=0; i<nbLignes;i++) {
-            line = sc.nextLine();
-            if (nbLignes == 2)
-            System.err.println(line);
-            String[] intervalle = line.split(" ");
-            int debut = parseInt(intervalle[0]);
-            int fin = parseInt(intervalle[1]);
-            BandeLumineuse bd = new BandeLumineuse(debut, fin);
-            listBl.add(bd);
+        while (sc.hasNextInt()) {
+            listBl.add(new Point(sc.nextInt(), sc.nextInt()));
         }
 
-        listBl.sort(Comparator.comparing(BandeLumineuse::getDebut));
+        listBl.sort(Comparator.comparing(Point::getX));
 
-        Iterator<BandeLumineuse> i = listBl.iterator();
-        int resultat = 1;
-        BandeLumineuse curr = i.next();
+        Iterator<Point> i = listBl.iterator();
+        int NB = 1;
+        Point curr = i.next();
 
         while (i.hasNext()) {
-            BandeLumineuse bl = i.next();
+            Point bl = i.next();
             if (isContinue(curr, bl)) {
                 curr = fusion(curr, bl);
             } else {
-                resultat++;
+                NB++;
                 curr = bl;
             }
         }
 
-        System.out.println(resultat);
+        System.out.println(NB);
 
     }
 
-    private static BandeLumineuse fusion(BandeLumineuse curr, BandeLumineuse bl) {
-        return new BandeLumineuse(curr.getDebut(), Math.max(curr.getFin(), bl.getFin()));
+    private static Point fusion(Point curr, Point bl) {
+        return new Point(curr.x, Math.max(curr.y, bl.y));
     }
 
-    private static boolean isContinue(BandeLumineuse bl1, BandeLumineuse bl2) {
-        return bl1.getFin()+1 >= bl2.getDebut();
+    private static boolean isContinue(Point bl1, Point bl2) {
+        return bl1.y + 1 >= bl2.x;
     }
-}
-
-class BandeLumineuse {
-    private int debut;
-    private int fin;
-
-    public BandeLumineuse(int debut, int fin) {
-        this.debut = debut;
-        this.fin = fin;
-    }
-
-    public int getDebut() {
-        return debut;
-    }
-
-    public int getFin() {
-        return fin;
-    }
-
-    @Override
-    public String toString() {
-        return "BL{" +
-                "" + debut +
-                "," + fin +
-                '}';
-    }
-
 }

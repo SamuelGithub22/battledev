@@ -4,27 +4,24 @@
  * Use: System.err.println to ouput debugging information to STDERR.
  * ***/
 package com.isograd.exercise;
-import java.util.*;
+
+import java.util.Scanner;
 
 public class IsoContest {
     public static void main( String[] argv ) throws Exception {
-        String  line;
         Scanner sc = new Scanner(System.in);
-        int maxPasDepasser = 250;
-        int hauteurRetenue = 0;
+        int N = sc.nextInt();
+        int M = 0;
 
-        while(sc.hasNextLine()) {
-            line = sc.nextLine();
+        while (sc.hasNextInt()) {
+            int H = sc.nextInt();
             /* Lisez les données et effectuez votre traitement */
-            int var = Integer.parseInt(line);
-           if (var <= maxPasDepasser && var > hauteurRetenue){
-               hauteurRetenue = var;
-
-           }
-
+            if (H <= 250 && H > M) {
+                M = H;
+            }
         }
 
-        System.out.println( hauteurRetenue);
+        System.out.println(M);
         /* Vous pouvez aussi effectuer votre traitement une fois que vous avez lu toutes les données.*/
     }
 }
